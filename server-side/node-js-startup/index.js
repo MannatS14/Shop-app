@@ -12,6 +12,10 @@ const db = mongoose.connection;
 db.on('error',(error) => console.error(error));
 db.once('open',() => console.log('Connected to Database'));
 
+app.get('/', (req, res) => {
+    res.json({ success: true, message: "GET route working fine." });
+});
+
 app.post('/', (req,res) => {
     const {name, age, email} = req.body;
     const newUser = new User({name: name, age: age, email: email});
