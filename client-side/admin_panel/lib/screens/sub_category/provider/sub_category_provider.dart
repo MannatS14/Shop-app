@@ -47,8 +47,6 @@ class SubCategoryProvider extends ChangeNotifier {
     }
   }
 
-  //TODO: should complete updateSubCategory
-
   updateSubCategory() async {
     try {
       if (subCategoryForUpdate != null) {
