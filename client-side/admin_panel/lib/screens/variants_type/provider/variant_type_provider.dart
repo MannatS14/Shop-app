@@ -17,21 +17,98 @@ class VariantsTypeProvider extends ChangeNotifier {
 
   VariantType? variantTypeForUpdate;
 
-
-
   VariantsTypeProvider(this._dataProvider);
 
+  addVariantType() async {
+    try {
+      Map<String, dynamic> variantType = {
+        'name': variantNameCtrl.text,
+        'type': variantTypeCtrl.text
+      };
+      final response = await service.addItem(
+          endpointUrl: 'variantTypes', itemData: variantType);
+      if (response.isOk) {
+        ApiResponse apiResponse = ApiResponse.fromJson(response.body, null);
+        if (apiResponse.success == true) {
+          clearFields();
+          SnackBarHelper.showSuccessSnackBar('${apiResponse.message}');
+          _dataProvider.getAllVariantTypes();
+        } else {
+          SnackBarHelper.showErrorSnackBar(
+              'Failed to add Brand: ${apiResponse.message}');
+        }
+      } else {
+        SnackBarHelper.showErrorSnackBar(
+            'Error ${response.body?['message'] ?? response.statusText}');
+      }
+    } catch (e) {
+      print(e);
+      SnackBarHelper.showErrorSnackBar('An error occured: $e');
+      rethrow;
+    }
+  }
 
-  //TODO: should complete addVariantType
+  updateVariantType() async {
+    try {
+      if (variantTypeForUpdate != null) {
+        Map<String, dynamic> variantType = {
+          'name': variantNameCtrl.text,
+          'type': variantTypeCtrl.text
+        };
+        final response = await service.updateItem(
+            endpointUrl: 'variantTypes',
+            itemData: variantType,
+            itemId: variantTypeForUpdate?.sId ?? '');
+        if (response.isOk) {
+          ApiResponse apiResponse = ApiResponse.fromJson(response.body, null);
+          if (apiResponse.success == true) {
+            clearFields();
+            SnackBarHelper.showSuccessSnackBar('${apiResponse.message}');
+            _dataProvider.getAllVariantTypes();
+          } else {
+            SnackBarHelper.showErrorSnackBar(
+                'Failed to add Brand: ${apiResponse.message}');
+          }
+        } else {
+          SnackBarHelper.showErrorSnackBar(
+              'Error ${response.body?['message'] ?? response.statusText}');
+        }
+      }
+    } catch (e) {
+      print(e);
+      SnackBarHelper.showErrorSnackBar('An error occurred: $e');
+      rethrow;
+    }
+  }
 
+  submitVariantType() {
+    if (variantTypeForUpdate != null) {
+      updateVariantType();
+    } else {
+      addVariantType();
+    }
+  }
 
-  //TODO: should complete updateVariantType
-
-
-  //TODO: should complete submitVariantType
-
-  //TODO: should complete deleteVariantType
-
+  deleteVariantType(VariantType variantType) async {
+    try {
+      Response response = await service.deleteItem(
+          endpointUrl: 'variantTypes', itemId: variantType.sId ?? '');
+      if (response.isOk) {
+        ApiResponse apiResponse = ApiResponse.fromJson(response.body, null);
+        if (apiResponse.success == true) {
+          SnackBarHelper.showSuccessSnackBar(
+              'Variant Type Deleted Successfully');
+          _dataProvider.getAllVariantTypes();
+        }
+      } else {
+        SnackBarHelper.showErrorSnackBar(
+            'Error ${response.body?['message'] ?? response.statusText}');
+      }
+    } catch (e) {
+      print(e);
+      rethrow;
+    }
+  }
 
   setDataForUpdateVariantTYpe(VariantType? variantType) {
     if (variantType != null) {
