@@ -45,7 +45,8 @@ class ProductSubmitForm extends StatelessWidget {
                       return ProductImageCard(
                         labelText: 'Main Image',
                         imageFile: dashProvider.selectedMainImage,
-                        imageUrlForUpdateImage: product?.images.safeElementAt(0)?.url,
+                        imageUrlForUpdateImage:
+                            product?.images.safeElementAt(0)?.url,
                         onTap: () {
                           dashProvider.pickImage(imageCardNumber: 1);
                         },
@@ -61,7 +62,8 @@ class ProductSubmitForm extends StatelessWidget {
                       return ProductImageCard(
                         labelText: 'Second image',
                         imageFile: dashProvider.selectedSecondImage,
-                        imageUrlForUpdateImage: product?.images.safeElementAt(1)?.url,
+                        imageUrlForUpdateImage:
+                            product?.images.safeElementAt(1)?.url,
                         onTap: () {
                           dashProvider.pickImage(imageCardNumber: 2);
                         },
@@ -77,7 +79,8 @@ class ProductSubmitForm extends StatelessWidget {
                       return ProductImageCard(
                         labelText: 'Third image',
                         imageFile: dashProvider.selectedThirdImage,
-                        imageUrlForUpdateImage: product?.images.safeElementAt(2)?.url,
+                        imageUrlForUpdateImage:
+                            product?.images.safeElementAt(2)?.url,
                         onTap: () {
                           dashProvider.pickImage(imageCardNumber: 3);
                         },
@@ -93,7 +96,8 @@ class ProductSubmitForm extends StatelessWidget {
                       return ProductImageCard(
                         labelText: 'Fourth image',
                         imageFile: dashProvider.selectedFourthImage,
-                        imageUrlForUpdateImage: product?.images.safeElementAt(3)?.url,
+                        imageUrlForUpdateImage:
+                            product?.images.safeElementAt(3)?.url,
                         onTap: () {
                           dashProvider.pickImage(imageCardNumber: 4);
                         },
@@ -109,7 +113,8 @@ class ProductSubmitForm extends StatelessWidget {
                       return ProductImageCard(
                         labelText: 'Fifth image',
                         imageFile: dashProvider.selectedFifthImage,
-                        imageUrlForUpdateImage: product?.images.safeElementAt(4)?.url,
+                        imageUrlForUpdateImage:
+                            product?.images.safeElementAt(4)?.url,
                         onTap: () {
                           dashProvider.pickImage(imageCardNumber: 5);
                         },
@@ -131,6 +136,7 @@ class ProductSubmitForm extends StatelessWidget {
                   if (value == null || value.isEmpty) {
                     return 'Please enter name';
                   }
+                  return null;
                 },
               ),
               SizedBox(height: defaultPadding),
@@ -148,12 +154,15 @@ class ProductSubmitForm extends StatelessWidget {
                       return CustomDropdown(
                         key: ValueKey(dashProvider.selectedCategory?.sId),
                         initialValue: dashProvider.selectedCategory,
-                        hintText: dashProvider.selectedCategory?.name ?? 'Select category',
+                        hintText: dashProvider.selectedCategory?.name ??
+                            'Select category',
                         items: context.dataProvider.categories,
-                        displayItem: (Category? category) => category?.name ?? '',
+                        displayItem: (Category? category) =>
+                            category?.name ?? '',
                         onChanged: (newValue) {
                           if (newValue != null) {
-                            //TODO: should complete call  filterSubcategory
+                            context.dashBoardProvider
+                                .filterSubcategory(newValue);
                           }
                         },
                         validator: (value) {
@@ -169,13 +178,15 @@ class ProductSubmitForm extends StatelessWidget {
                     builder: (context, dashProvider, child) {
                       return CustomDropdown(
                         key: ValueKey(dashProvider.selectedSubCategory?.sId),
-                        hintText: dashProvider.selectedSubCategory?.name ?? 'Sub category',
+                        hintText: dashProvider.selectedSubCategory?.name ??
+                            'Sub category',
                         items: dashProvider.subCategoriesByCategory,
                         initialValue: dashProvider.selectedSubCategory,
-                        displayItem: (SubCategory? subCategory) => subCategory?.name ?? '',
+                        displayItem: (SubCategory? subCategory) =>
+                            subCategory?.name ?? '',
                         onChanged: (newValue) {
                           if (newValue != null) {
-                            //TODO: should complete call filterBrand
+                            context.dashBoardProvider.filterBrand(newValue);
                           }
                         },
                         validator: (value) {
@@ -194,7 +205,8 @@ class ProductSubmitForm extends StatelessWidget {
                             key: ValueKey(dashProvider.selectedBrand?.sId),
                             initialValue: dashProvider.selectedBrand,
                             items: dashProvider.brandsBySubCategory,
-                            hintText: dashProvider.selectedBrand?.name ?? 'Select Brand',
+                            hintText: dashProvider.selectedBrand?.name ??
+                                'Select Brand',
                             displayItem: (Brand? brand) => brand?.name ?? '',
                             onChanged: (newValue) {
                               if (newValue != null) {
@@ -204,7 +216,7 @@ class ProductSubmitForm extends StatelessWidget {
                             },
                             validator: (value) {
                               if (value == null) {
-                                return 'Please brand';
+                                return 'Please select a brand';
                               }
                               return null;
                             });
@@ -264,10 +276,11 @@ class ProductSubmitForm extends StatelessWidget {
                           key: ValueKey(dashProvider.selectedVariantType?.sId),
                           initialValue: dashProvider.selectedVariantType,
                           items: context.dataProvider.variantTypes,
-                          displayItem: (VariantType? variantType) => variantType?.name ?? '',
+                          displayItem: (VariantType? variantType) =>
+                              variantType?.name ?? '',
                           onChanged: (newValue) {
                             if (newValue != null) {
-                              //TODO: should complete call filterVariant
+                              context.dashBoardProvider.filterVariant(newValue);
                             }
                           },
                           hintText: 'Select Variant type',
@@ -278,8 +291,11 @@ class ProductSubmitForm extends StatelessWidget {
                   Expanded(
                     child: Consumer<DashBoardProvider>(
                       builder: (context, dashProvider, child) {
-                        final filteredSelectedItems =
-                            dashProvider.selectedVariants.where((item) => dashProvider.variantsByVariantType.contains(item)).toList();
+                        final filteredSelectedItems = dashProvider
+                            .selectedVariants
+                            .where((item) => dashProvider.variantsByVariantType
+                                .contains(item))
+                            .toList();
                         return MultiSelectDropDown(
                           items: dashProvider.variantsByVariantType,
                           onSelectionChanged: (newValue) {
@@ -316,8 +332,13 @@ class ProductSubmitForm extends StatelessWidget {
                     ),
                     onPressed: () {
                       // Validate and save the form
-                      if (context.dashBoardProvider.addProductFormKey.currentState!.validate()) {
-                        context.dashBoardProvider.addProductFormKey.currentState!.save();
+                      if (context
+                          .dashBoardProvider.addProductFormKey.currentState!
+                          .validate()) {
+                        context
+                            .dashBoardProvider.addProductFormKey.currentState!
+                            .save();
+                        context.dashBoardProvider.addProduct();
                         //TODO: should complete call submitProduct
                         Navigator.of(context).pop();
                       }
@@ -341,7 +362,9 @@ void showAddProductForm(BuildContext context, Product? product) {
     builder: (BuildContext context) {
       return AlertDialog(
         backgroundColor: bgColor,
-        title: Center(child: Text('Add Product'.toUpperCase(), style: TextStyle(color: primaryColor))),
+        title: Center(
+            child: Text('Add Product'.toUpperCase(),
+                style: TextStyle(color: primaryColor))),
         content: ProductSubmitForm(product: product),
       );
     },
@@ -357,7 +380,3 @@ extension SafeList<T> on List<T>? {
     return this![index];
   }
 }
-
-
-
-
