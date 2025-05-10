@@ -13,6 +13,7 @@ import '../../../core/data/data_provider.dart';
 import '../../../models/category.dart';
 import '../../../services/http_services.dart';
 import '../../../models/product.dart';
+import 'package:collection/collection.dart';
 
 class DashBoardProvider extends ChangeNotifier {
   HttpService service = HttpService();
@@ -68,7 +69,7 @@ class DashBoardProvider extends ChangeNotifier {
         'offerPrice': productOffPriceCtrl.text.isEmpty
             ? productPriceCtrl.text
             : productOffPriceCtrl.text,
-        'quantity': productPriceCtrl.text,
+        'quantity': productQntCtrl.text,
         'proVariantTypeId': selectedVariantType?.sId,
         'proVariantId': selectedVariants,
       };
@@ -112,11 +113,92 @@ class DashBoardProvider extends ChangeNotifier {
     }
   }
 
-  //TODO: should complete updateProduct
+  updateProduct() async {
+    try {
+      Map<String, dynamic> formDataMap = {
+        'name': productNameCtrl.text,
+        'description': productDescCtrl.text,
+        'proCategoryId': selectedCategory?.sId ?? '',
+        'proSubCategoryId': selectedSubCategory?.sId ?? '',
+        'proBrandId': selectedBrand?.sId ?? '',
+        'price': productPriceCtrl.text,
+        'offerPrice': productOffPriceCtrl.text.isEmpty
+            ? productPriceCtrl.text
+            : productOffPriceCtrl.text,
+        'quantity': productQntCtrl.text,
+        'proVariantTypeId': selectedVariantType?.sId ?? '',
+        'proVariantId': selectedVariants,
+      };
+      // print('--- Form Data Map ---');
+      // formDataMap.forEach((key, value) {
+      //   print('$key: $value');
+      // });
+      // print('----------------------');
 
-  //TODO: should complete submitProduct
+      final FormData form = await createFormDataForMultipleImage(imgXFiles: [
+        {'image1': mainImgXFile},
+        {'image2': secondImgXFile},
+        {'image3': thirdImgXFile},
+        {'image4': fourthImgXFile},
+        {'image5': fifthImgXFile}
+      ], formData: formDataMap);
 
-  //TODO: should complete deleteProduct
+      if (productForUpdate != null) {}
+
+      final response = await service.updateItem(
+          endpointUrl: 'products',
+          itemData: form,
+          itemId: '${productForUpdate?.sId}');
+      if (response.isOk) {
+        print(response.body);
+        ApiResponse apiResponse = ApiResponse.fromJson(response.body, null);
+        if (apiResponse.success == true) {
+          clearFields();
+          SnackBarHelper.showSuccessSnackBar('${apiResponse.message}');
+          clearFields();
+          _dataProvider.getAllProduct();
+        } else {
+          SnackBarHelper.showErrorSnackBar(
+              'Failed to add Products: ${apiResponse.message}');
+        }
+      } else {
+        SnackBarHelper.showErrorSnackBar(
+            'Error ${response.body?['message'] ?? response.statusText}');
+      }
+    } catch (e) {
+      print(e);
+      SnackBarHelper.showErrorSnackBar('An Error Occured: $e');
+      rethrow;
+    }
+  }
+
+  submitProduct() {
+    if (productForUpdate != null) {
+      updateProduct();
+    } else {
+      addProduct();
+    }
+  }
+
+  deleteProduct(Product product) async {
+    try {
+      Response response = await service.deleteItem(
+          endpointUrl: 'products', itemId: product.sId ?? '');
+      if (response.isOk) {
+        ApiResponse apiResponse = ApiResponse.fromJson(response.body, null);
+        if (apiResponse.success == true) {
+          SnackBarHelper.showSuccessSnackBar('Category Deleted Successfully');
+          _dataProvider.getAllProduct();
+        }
+      } else {
+        SnackBarHelper.showErrorSnackBar(
+            'Error ${response.body?['message'] ?? response.statusText}');
+      }
+    } catch (e) {
+      print(e);
+      rethrow;
+    }
+  }
 
   void pickImage({required int imageCardNumber}) async {
     final ImagePicker picker = ImagePicker();
@@ -207,6 +289,11 @@ class DashBoardProvider extends ChangeNotifier {
   }
 
   setDataForUpdateProduct(Product? product) {
+    FlutterError.onError = (FlutterErrorDetails details) {
+      FlutterError.presentError(details);
+      debugPrintStack(label: 'Caught Flutter Error', stackTrace: details.stack);
+    };
+
     if (product != null) {
       productForUpdate = product;
 

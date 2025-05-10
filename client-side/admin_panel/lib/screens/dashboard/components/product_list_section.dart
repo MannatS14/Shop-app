@@ -1,9 +1,12 @@
+import 'package:admin/utility/extensions.dart';
+
 import '../../../core/data/data_provider.dart';
 import '../../../models/product.dart';
 import 'add_product_form.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../utility/constants.dart';
+import 'package:collection/collection.dart';
 
 class ProductListSection extends StatelessWidget {
   const ProductListSection({
@@ -23,10 +26,7 @@ class ProductListSection extends StatelessWidget {
         children: [
           Text(
             "All Products",
-            style: Theme
-                .of(context)
-                .textTheme
-                .titleMedium,
+            style: Theme.of(context).textTheme.titleMedium,
           ),
           SizedBox(
             width: double.infinity,
@@ -34,7 +34,6 @@ class ProductListSection extends StatelessWidget {
               builder: (context, dataProvider, child) {
                 return DataTable(
                   columnSpacing: defaultPadding,
-                  // minWidth: 600,
                   columns: [
                     DataColumn(
                       label: Text("Product Name"),
@@ -57,12 +56,17 @@ class ProductListSection extends StatelessWidget {
                   ],
                   rows: List.generate(
                     dataProvider.products.length,
-                        (index) => productDataRow(dataProvider.products[index],edit: () {
-                          showAddProductForm(context, dataProvider.products[index]);
-                        },
-                          delete: () {
-                            //TODO: should complete call deleteProduct
-                          },),
+                    (index) => productDataRow(
+                      dataProvider.products[index],
+                      edit: () {
+                        showAddProductForm(
+                            context, dataProvider.products[index]);
+                      },
+                      delete: () {
+                        context.dashBoardProvider
+                            .deleteProduct(dataProvider.products[index]);
+                      },
+                    ),
                   ),
                 );
               },
@@ -74,30 +78,42 @@ class ProductListSection extends StatelessWidget {
   }
 }
 
-DataRow productDataRow(Product productInfo,{Function? edit, Function? delete}) {
+DataRow productDataRow(Product productInfo,
+    {Function? edit, Function? delete}) {
   return DataRow(
     cells: [
       DataCell(
         Row(
           children: [
-            Image.network(
-              productInfo.images?.first.url ?? '',
-              height: 30,
-              width: 30,
-              errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
-                return Icon(Icons.error);
-              },
-            ),
+            // Safely handle image URL
+            productInfo.images != null && productInfo.images!.isNotEmpty
+                ? Image.network(
+                    productInfo.images!
+                            .firstWhereOrNull(
+                                (image) => image.url?.isNotEmpty ?? false)
+                            ?.url ??
+                        '', // Fallback to empty string if no URL found
+                    height: 30,
+                    width: 30,
+                    errorBuilder: (BuildContext context, Object exception,
+                        StackTrace? stackTrace) {
+                      return Icon(Icons.error);
+                    },
+                  )
+                : Icon(Icons.image_not_supported), // Fallback icon if no images
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
-              child: Text(productInfo.name ?? ''),
+              child: Text(productInfo.name ?? 'Unnamed Product'),
             ),
           ],
         ),
       ),
-      DataCell(Text(productInfo.proCategoryId?.name ?? '')),
-      DataCell(Text(productInfo.proSubCategoryId?.name ?? '')),
-      DataCell(Text('${productInfo.price}'),),
+      DataCell(Text(productInfo.proCategoryId?.name ?? 'Unknown Category')),
+      DataCell(
+          Text(productInfo.proSubCategoryId?.name ?? 'Unknown SubCategory')),
+      DataCell(
+        Text('${productInfo.price ?? '0'}'), // Handle null price
+      ),
       DataCell(IconButton(
           onPressed: () {
             if (edit != null) edit();
