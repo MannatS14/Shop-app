@@ -300,7 +300,45 @@ class DataProvider extends ChangeNotifier {
 
   //TODO: should complete calculateOrdersWithStatus
 
-  //TODO: should complete filterProductsByQuantity
+  void filterProductsByQuantity(String productQntType) {
+    if (productQntType == 'All Product') {
+      _filteredProducts = List.from(_allProducts);
+    } else if (productQntType == 'Out of Stock') {
+      _filteredProducts = _allProducts.where((product) {
+        //? Filter products with quantity equal to 0 (Out of stock)
 
-  //TODO: should complete calculateProductWithQuantity
+        return product.quantity != null && product.quantity == 0;
+      }).toList();
+    } else if (productQntType == 'Limited Stock') {
+      _filteredProducts = _allProducts.where((product) {
+//? Filter products with quantity equal to 1 (limited stock)
+        return product.quantity != null && product.quantity == 1;
+      }).toList();
+    } else if (productQntType == 'Other Stock') {
+      _filteredProducts = _allProducts.where((product) {
+//? Filter products with quantity not equal to 0 or 1 (other stock)
+        return product.quantity != null &&
+            product.quantity != 0 &&
+            product.quantity != 1;
+      }).toList();
+    } else {
+      _filteredProducts = List.from(_allProducts);
+    }
+    notifyListeners();
+  }
+
+  int calculateProductWithQuantity({int? quantity}) {
+    int totalProduct = 0;
+    //? if targetQuantity is null it returns total product
+    if (quantity == null) {
+      totalProduct = _allProducts.length;
+    } else {
+      for (Product product in _allProducts) {
+        if (product.quantity != null && product.quantity == quantity) {
+          totalProduct += 1;
+        }
+      }
+    }
+    return totalProduct;
+  }
 }
